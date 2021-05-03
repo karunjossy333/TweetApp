@@ -121,12 +121,8 @@ export class LoginDashboardComponent implements OnInit, OnDestroy {
     this.facadeDashboardService.callUserRegisterService(requestObject);
     // tslint:disable-next-line: deprecation
     this.sgninSrvceSub = this.facadeDashboardService.registerUserObservable.pipe(takeUntil(this.ngUnSubscribe)).subscribe(serviceData => {
-      serviceData = {
-        serviceResponse: {
-          status: true
-        }
-      };
       if (Object.keys(serviceData).length > 0) {
+        console.log(serviceData);
         if (serviceData.serviceResponse.status === true) {
           this.showPopUp('User registered successfully.', 'Success');
           this.selectedOptions = 0;
