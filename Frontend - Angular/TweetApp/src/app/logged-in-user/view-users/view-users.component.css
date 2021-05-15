@@ -23,5 +23,13 @@
 .view-all-users {
     display: flex;
     flex-wrap: wrap;
-    margin: 0px 140px;
+    margin: 0px 60px;
+}
+
+.user-photo {
+    padding: 0px 7px;
+}
+
+.pi-user {
+    font-size: 90px;
 }

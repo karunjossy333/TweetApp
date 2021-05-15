@@ -1,27 +1,40 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { FacadeLoggedInService } from '../service/facade-logged-in.service';
+import { LoggedInSharedService } from '../service/logged-in-shared.service';
 
 @Component({
   selector: 'app-user-dashboard',
   templateUrl: './user-dashboard.component.html',
   styleUrls: ['./user-dashboard.component.css']
 })
-export class UserDashboardComponent implements OnInit {
+export class UserDashboardComponent implements OnInit, OnDestroy {
+
+  ngUnsubscribe = new Subject();
 
   userAction = 0;
-  userLoginId: string;
-  userName: string;
+  userLoginId: String;
+  userName: String;
+  userId: number;
 
   newTweet: string;
   hashTag: string;
   tweetData: any = [];
 
   constructor(
-    private router: Router) {
+    private router: Router,
+    private loggedInSharedService: LoggedInSharedService,
+    private facadeLoggedInService: FacadeLoggedInService) {
+    if (loggedInSharedService.getUserId() === -1) {
+      this.router.navigateByUrl('/login');
+    }
     this.newTweet = '';
     this.hashTag = '';
-    this.userLoginId = 'karunjossy333';
-    this.userName = 'Karun Jossy Edathadathil';
+    this.userLoginId = loggedInSharedService.getUserLoginId();
+    this.userName = loggedInSharedService.getUserName();
+    this.userId = loggedInSharedService.getUserId();
   }
 
   ngOnInit(): void {
@@ -33,17 +46,15 @@ export class UserDashboardComponent implements OnInit {
     switch (selectedOption) {
       case 1:
         this.newTweet = '';
+        this.facadeLoggedInService.getUserTweet(this.userLoginId);
         break;
       case 2:
-
         break;
       case 3:
-
-        break;
-      case 4:
-
+        this.facadeLoggedInService.getUsersList();
         break;
       case 5:
+        this.loggedInSharedService.deleteLoggedInUser();
         this.router.navigateByUrl('/login');
         break;
       default:
@@ -52,7 +63,25 @@ export class UserDashboardComponent implements OnInit {
   }
 
   postTweet(): void {
+    const requestObject = {
+      loginid: this.userLoginId,
+      userid: this.userId,
+      tweet: this.newTweet,
+      hashtag: this.hashTag,
+      postdate: new Date().toDateString()
+    };
+    this.facadeLoggedInService.postTweet(requestObject);
+    this.facadeLoggedInService.postTweetObservable.pipe(takeUntil(this.ngUnsubscribe)).subscribe((serviceData) => {
+      if (Object.keys(serviceData).length > 0) {
+        this.newTweet = '';
+        this.hashTag = '';
+        this.facadeLoggedInService.getUserTweet(this.userLoginId);
+      }
+    });
+  }
 
+  ngOnDestroy(): void {
+    this.facadeLoggedInService.removeBehaviorSubject();
   }
 
 }

@@ -24,4 +24,9 @@ export class LoginService {
     return this.http.post<any>(serviceUrl, requestObject);
   }
 
+  changePassword(requestObject: any): Observable<any> {
+    const serviceUrl = this.serviceGlobal.USER_FORGOT_PASSWORD;
+    return this.http.post<any>(serviceUrl, requestObject);
+  }
+
 }

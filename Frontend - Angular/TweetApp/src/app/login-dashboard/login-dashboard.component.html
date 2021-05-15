@@ -161,7 +161,7 @@
                                 <strong>:</strong>
                             </div>
                             <div class="p-col-6">
-                                <input type="password" pInputText placeholder="password" formControlName="password">
+                                <input type="password" pInputText placeholder="password" formControlName="password" (keyup)="checkForgotPass()">
                             </div>
                         </div>
                         <div class="p-grid m-b-2">
@@ -172,7 +172,17 @@
                                 <strong>:</strong>
                             </div>
                             <div class="p-col-6">
-                                <input type="password" pInputText placeholder="confirm password" formControlName="confirmPassword">
+                                <input type="password" pInputText placeholder="confirm password" formControlName="confirmPassword" (keyup)="checkForgotPass()">
+                            </div>
+                        </div>
+                        <div class="p-grid" *ngIf="forgotPasswordForm.controls['password'].errors?.minlength">
+                            <div class="p-col-12 label required">
+                                Minimum password length is 8.
+                            </div>
+                        </div>
+                        <div class="p-grid" *ngIf="forgotPasswordForm.controls['password'].errors?.passwordmismatch">
+                            <div class="p-col-12 label required">
+                                Password mismatch.
                             </div>
                         </div>
                         <div class="p-grid">

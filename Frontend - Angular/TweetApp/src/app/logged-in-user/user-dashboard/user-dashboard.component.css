@@ -7,6 +7,10 @@
     overflow-y: hidden;
 }
 
+.disable {
+    opacity: 0.5;
+}
+
 .header {
     width: 96%;
     height: auto;

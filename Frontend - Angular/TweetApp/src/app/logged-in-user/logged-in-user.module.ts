@@ -5,7 +5,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ButtonModule } from 'primeng/button';
 import { ViewTweetsComponent } from './view-tweets/view-tweets.component';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ViewUsersComponent } from './view-users/view-users.component';
 
 const routes: Routes = [
@@ -20,7 +20,8 @@ const routes: Routes = [
     RouterModule.forChild(routes),
     ButtonModule,
     InputTextareaModule,
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule
   ]
 })
 export class LoggedInUserModule { }

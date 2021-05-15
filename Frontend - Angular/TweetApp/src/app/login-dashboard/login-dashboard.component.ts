@@ -3,6 +3,7 @@ import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from
 import { Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { LoggedInSharedService } from '../logged-in-user/service/logged-in-shared.service';
 import { FacadeDashboardService } from '../service/facade-dashboard.service';
 
 @Component({
@@ -35,12 +36,14 @@ export class LoginDashboardComponent implements OnInit, OnDestroy {
 
   private ngUnSubscribe = new Subject();
 
-  sgninSrvceSub: Subscription = new Subscription();
+  sgninSrvceSub: Subscription | undefined;
+  sgnUpSrvceSub: Subscription | undefined;
 
   constructor(
     private formBuilder: FormBuilder,
     private facadeDashboardService: FacadeDashboardService,
-    private router: Router) {
+    private router: Router,
+    private loggedInSharedService: LoggedInSharedService) {
 
     this.loginForm = this.formBuilder.group({
       loginId: ['', Validators.required],
@@ -88,30 +91,32 @@ export class LoginDashboardComponent implements OnInit, OnDestroy {
 
   onSignIn(): void {
     const requestObject = {
-      loginId: this.loginForm.controls.loginId.value,
+      loginid: this.loginForm.controls.loginId.value,
       password: this.loginForm.controls.password.value
     };
     this.facadeDashboardService.callLoginService(requestObject);
-    // tslint:disable-next-line: deprecation
-    this.sgninSrvceSub = this.facadeDashboardService.loginObservable.pipe(takeUntil(this.ngUnSubscribe)).subscribe(serviceData => {
-      serviceData = {
-        serviceResponse: {
-          status: true
+    if (this.sgninSrvceSub === undefined) {
+      this.sgninSrvceSub = this.facadeDashboardService.loginObservable.pipe(takeUntil(this.ngUnSubscribe)).subscribe(serviceData => {
+        if (Object.keys(serviceData).length > 0) {
+          if (serviceData.serviceResponse.status === true) {
+            let data = serviceData.serviceResponse.userDetails;
+            this.loggedInSharedService.setUserId(data.id);
+            this.loggedInSharedService.setUserName(data.firstName + ' ' + data.lastName);
+            this.loggedInSharedService.setUserLoginId(data.loginid);
+            this.router.navigateByUrl('/user');
+          } else if (serviceData.serviceResponse.status === false && serviceData.serviceResponse.errors === undefined) {
+            this.showPopUp('Invalid Credential.', 'Error');
+          } else if (serviceData.serviceResponse.errors !== undefined) {
+            this.showPopUp('Some error occured please try again later. ' + serviceData.serviceResponse.errors, 'Error');
+          }
         }
-      };
-      if (Object.keys(serviceData).length > 0) {
-        if (serviceData.serviceResponse.status === true) {
-          this.router.navigateByUrl('/user');
-        } else if (serviceData.serviceResponse.status === false) {
-          this.showPopUp('Invalid Credential. Please try again.', 'Error');
-        }
-      }
-    });
+      });
+    }
   }
 
   onSignUp(): void {
     const requestObject = {
-      loginId: this.signUpForm.controls.loginId.value,
+      loginid: this.signUpForm.controls.loginId.value,
       password: this.signUpForm.controls.password.value,
       firstname: this.signUpForm.controls.firstName.value,
       lastname: this.signUpForm.controls.lastName.value,
@@ -119,25 +124,39 @@ export class LoginDashboardComponent implements OnInit, OnDestroy {
       email: this.signUpForm.controls.email.value
     };
     this.facadeDashboardService.callUserRegisterService(requestObject);
-    // tslint:disable-next-line: deprecation
-    this.sgninSrvceSub = this.facadeDashboardService.registerUserObservable.pipe(takeUntil(this.ngUnSubscribe)).subscribe(serviceData => {
-      if (Object.keys(serviceData).length > 0) {
-        console.log(serviceData);
-        if (serviceData.serviceResponse.status === true) {
-          this.showPopUp('User registered successfully.', 'Success');
-          this.selectedOptions = 0;
-          this.resetForm();
-        } else if (serviceData.serviceResponse.status === false) {
-          this.showPopUp('Something went wrong.', 'Error');
+    if (this.sgnUpSrvceSub === undefined) {
+      this.sgnUpSrvceSub = this.facadeDashboardService.registerUserObservable.pipe(takeUntil(this.ngUnSubscribe)).subscribe(serviceData => {
+        if (Object.keys(serviceData).length > 0) {
+          if (serviceData.serviceResponse.status === true) {
+            this.showPopUp('User registered successfully.', 'Success');
+            this.selectedOptions = 0;
+            this.resetForm();
+          } else if (serviceData.serviceResponse.status === false && serviceData.serviceResponse.errors === undefined) {
+            this.showPopUp('Login id or Email is already used by another user.', 'Error');
+          } else if (serviceData.serviceResponse.errors !== undefined) {
+            this.showPopUp('Something went wrong. ' + serviceData.serviceResponse.errors, 'Error');
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   onChangePassword(): void {
     const requestObject = {
-
+      loginid: this.forgotPasswordForm.controls.loginId.value,
+      password: this.forgotPasswordForm.controls.password.value
     };
+    this.facadeDashboardService.changePassword(requestObject);
+    this.facadeDashboardService.changePasswordObservable.pipe(takeUntil(this.ngUnSubscribe)).subscribe((serviceData) => {
+      if (Object.keys(serviceData).length > 0) {
+        if (serviceData.serviceResponse.status === true) {
+          this.showPopUp('Password changed successfully.', 'Success');
+          this.selectedOptions = 0;
+        } else {
+          this.showPopUp('Something went wrong.', 'Error');
+        }
+      }
+    });
   }
 
   onForgotPasswordClick(): void {
@@ -174,12 +193,31 @@ export class LoginDashboardComponent implements OnInit, OnDestroy {
     }, 6000);
   }
 
+  checkForgotPass(): void {
+    let password = this.forgotPasswordForm.controls.password.value;
+    let confirmPass = this.forgotPasswordForm.controls.confirmPassword.value;
+    if (password !== '' && password !== null && password.length < 8) {
+      this.forgotPasswordForm.controls.password.setErrors({ minlength: true });
+      return;
+    }
+    if (password === '' || password === null || confirmPass === '' || confirmPass === null) {
+      return;
+    } else if (password !== confirmPass) {
+      this.forgotPasswordForm.controls.password.setErrors({ passwordmismatch: true });
+    } else {
+      this.forgotPasswordForm.controls.password.setErrors(null);
+    }
+  }
+
   ngOnDestroy(): void {
     if (this.sgnupCnfrmPassSub) {
       this.sgnupCnfrmPassSub.unsubscribe();
     }
     if (this.sgnupPassSub) {
       this.sgnupPassSub.unsubscribe();
+    }
+    if (this.sgnUpSrvceSub) {
+      this.sgnUpSrvceSub.unsubscribe();
     }
     if (this.sgninSrvceSub) {
       this.sgninSrvceSub.unsubscribe();
