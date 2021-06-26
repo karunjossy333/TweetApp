@@ -111,7 +111,7 @@ export class LoginDashboardComponent implements OnInit, OnDestroy {
 
   onSignUp(): void {
     const requestObject = {
-      loginId: this.signUpForm.controls.loginId.value,
+      loginid: this.signUpForm.controls.loginId.value,
       password: this.signUpForm.controls.password.value,
       firstname: this.signUpForm.controls.firstName.value,
       lastname: this.signUpForm.controls.lastName.value,
