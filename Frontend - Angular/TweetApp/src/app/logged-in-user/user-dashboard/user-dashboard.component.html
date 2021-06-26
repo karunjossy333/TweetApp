@@ -14,9 +14,6 @@
                     <a href="javascript:void(0)" (click)="onNavigationClick(3)" [ngClass]="{ selected: userAction===3 }">View Users</a>
                 </li>
                 <li>
-                    <a href="javascript:void(0)" (click)="onNavigationClick(4)" [ngClass]="{ selected: userAction===4 }">Change Password</a>
-                </li>
-                <li>
                     <a href="javascript:void(0)" (click)="onNavigationClick(5)" [ngClass]="{ selected: userAction===5 }">Log out</a>
                 </li>
             </ul>
@@ -44,27 +41,24 @@
                                 <textarea [rows]="1" [cols]="60" pInputTextarea [autoResize]=true placeholder="Hash tag (optional)." maxlength=50 [(ngModel)]="hashTag"></textarea>
                             </div>
                             <div class="flex-display">
-                                <button [disabled]="newTweet.length===0" pButton pRipple type="button" label="Post Tweet" class="p-button-rounded" (click)="postTweet()"></button>
+                                <button [ngClass]="{ 'disable': newTweet.length===0 }" [disabled]="newTweet.length===0" pButton pRipple type="button" label="Post Tweet" class="p-button-rounded" (click)="postTweet()"></button>
                             </div>
                         </div>
                         <div class="view-tweet">
-                            <app-view-tweets [tweetData]="tweetData" [module]="'myTweet'"></app-view-tweets>
+                            <app-view-tweets [tweetData]="tweetData" [userId]="userId" [userLoginId]="userLoginId" [module]="'myTweet'"></app-view-tweets>
                         </div>
                     </div>
                 </div>
             </ng-template>
             <ng-template [ngIf]="userAction===2">
                 <div class="view-all-tweet">
-                    <app-view-tweets [tweetData]="tweetData" [module]="'allTweet'"></app-view-tweets>
+                    <app-view-tweets [tweetData]="tweetData" [userId]="userId" [userLoginId]="userLoginId" [module]="'allTweet'"></app-view-tweets>
                 </div>
             </ng-template>
             <ng-template [ngIf]="userAction===3">
                 <div class="view-all-users">
-                    <app-view-users></app-view-users>
+                    <app-view-users [currentUser]="userId"></app-view-users>
                 </div>
-            </ng-template>
-            <ng-template [ngIf]="userAction===4">
-                Change Password
             </ng-template>
         </div>
     </div>

@@ -1,8 +1,9 @@
 .dashboard {
-    height: 100vh;
+    min-height: 100vh;
+    height: auto;
     width: 100vw;
     overflow: hidden;
-    background-image: url('../../assets/img/backgroung-image.png');
+    background-image: url('../../assets/img/background-image.png');
     background-color: rgba(255, 255, 255, 0.295);
     background-blend-mode: lighten;
     background-repeat: no-repeat;

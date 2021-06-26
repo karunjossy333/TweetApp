@@ -17,6 +17,9 @@ export class FacadeDashboardService {
   private registerUserBehaviorSubject = new BehaviorSubject<any>({});
   registerUserObservable = this.registerUserBehaviorSubject.asObservable();
 
+  private changePasswordBehaviorSubject = new BehaviorSubject<any>({});
+  changePasswordObservable = this.changePasswordBehaviorSubject.asObservable();
+
   callLoginService(requestObject: any): void {
     this.loginBehaviorSubject.next({});
     // tslint:disable-next-line: deprecation
@@ -33,8 +36,17 @@ export class FacadeDashboardService {
     });
   }
 
+  changePassword(requestObject: any): void {
+    this.changePasswordBehaviorSubject.next({});
+    this.loginService.changePassword(requestObject).subscribe((data) => {
+      this.changePasswordBehaviorSubject.next(data);
+    });
+  }
+
   resetBehaviorSubject(): void {
     this.loginBehaviorSubject.next({});
+    this.registerUserBehaviorSubject.next({});
+    this.changePasswordBehaviorSubject.next({});
   }
 
 }
