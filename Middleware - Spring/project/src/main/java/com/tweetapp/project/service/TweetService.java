@@ -1,7 +1,6 @@
 package com.tweetapp.project.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,21 +20,34 @@ public class TweetService {
 	private UserTweetRepository userTweetRepository;
 	@Autowired
 	private UserDetailsRepository userDetailsRepository;
-	@Autowired
-	private SequenceGeneratorService sequenceGeneratorService;
+//	@Autowired
+//	private SequenceGeneratorService sequenceGeneratorService;
 	
 	public static ObjectMapper mapper = new ObjectMapper();
 	
 	public ObjectNode postTweet(String loginid, UserTweets userTweet) {
 		ObjectNode statusNode = mapper.createObjectNode();
 		try {
-			userTweet.setId(sequenceGeneratorService.generateSequence(UserTweets.SEQUENCE_NAME));
-			userTweetRepository.save(userTweet);
-			statusNode.put("status", true);
+//			userTweet.setId(sequenceGeneratorService.generateSequence(UserTweets.SEQUENCE_NAME));
+			long tweetId = 0;
+			int count = 0;
+			do {
+				tweetId = userTweetRepository.getTweetId();
+				if(tweetId != 0) {
+					userTweet.setId(tweetId);
+			        userTweetRepository.save(userTweet);
+			        statusNode.put("status", true);
+			        break;
+				}
+				if(count == 10) {
+					throw new Exception("Some error occured");
+				}
+				count++;
+			} while(tweetId == 0);
 		} catch (Exception e) {
 			statusNode.put("status", false);
 			statusNode.put("errors", e.getMessage());
-			sequenceGeneratorService.decrement(UserTweets.SEQUENCE_NAME);
+//			sequenceGeneratorService.decrement(UserTweets.SEQUENCE_NAME);
 		}
 		return statusNode;
 	}
@@ -69,7 +81,6 @@ public class TweetService {
 					replyTweetNode.put("replyTweetId", replyTweet.getReplytweetid());
 					
 					replyTweetArray.add(replyTweetNode);
-					
 				}
 				
 				tweetNode.put("userName", user.getFirstname() + ' ' + user.getLastname());
@@ -83,7 +94,7 @@ public class TweetService {
 				
 				tweetNode.putArray("replyTweet").addAll(replyTweetArray);
 				tweetArray.add(tweetNode);
-			}		
+			}
 			statusNode.put("status", true);
 			statusNode.putArray("usertweets").addAll(tweetArray);
 		} catch (Exception e) {
@@ -146,18 +157,13 @@ public class TweetService {
 		return statusNode;
 	}
 	
-	public ObjectNode likeTweet(long userid, int tweetid) {
+	public ObjectNode likeTweet(long userid, long tweetid) {
 		ObjectNode statusNode = mapper.createObjectNode();
 		try {
-			Optional<UserTweets> tweet = userTweetRepository.findById(tweetid);
-			if(tweet.isPresent() == true) {
-				UserTweets likeTweet = tweet.get();
-				likeTweet.postLike(userid);
-				userTweetRepository.save(likeTweet);
-				statusNode.put("status", true);
-			} else {
-				statusNode.put("status", false);
-			}
+			UserTweets tweet = userTweetRepository.findTweetById(tweetid);
+			tweet.postLike(userid);
+			userTweetRepository.save(tweet);
+			statusNode.put("status", true);
 		} catch (Exception e) {
 			statusNode.put("status", false);
 			statusNode.put("errors", e.getMessage());

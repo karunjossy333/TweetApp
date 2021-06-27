@@ -1,10 +1,10 @@
 package com.tweetapp.project.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,24 +18,31 @@ public class UserService {
 
 	@Autowired
 	private UserDetailsRepository userDetailsRepository;
-	@Autowired
-	private SequenceGeneratorService sequenceGeneratorService;
+//	@Autowired
+//	private SequenceGeneratorService sequenceGeneratorService;
 	
 	public static ObjectMapper mapper = new ObjectMapper();
 	
 	public ObjectNode registerUser(UserDetails registerUser) {
 		ObjectNode statusNode = mapper.createObjectNode();
 		try {
-			registerUser.setId(sequenceGeneratorService.generateSequence(UserDetails.SEQUENCE_NAME));
-			userDetailsRepository.save(registerUser);
-			statusNode.put("status", true);
-		} catch(DuplicateKeyException e) {
-			statusNode.put("status", false);
-			sequenceGeneratorService.decrement(UserDetails.SEQUENCE_NAME);
-		} catch (Exception e) {
+			registerUser.setId(generateId((long) Math.floor(Math.random() * 2)));
+//			registerUser.setId(sequenceGeneratorService.generateSequence(UserDetails.SEQUENCE_NAME));
+			if(userDetailsRepository.getUserDetails(registerUser.getLoginid(), registerUser.getPassword()) == null) {
+				userDetailsRepository.save(registerUser);
+				statusNode.put("status", true);
+			} else {
+				throw new Exception("User already exist!!");
+			}
+		}
+//		catch(DuplicateKeyException e) {
+//			statusNode.put("status", false);
+//			sequenceGeneratorService.decrement(UserDetails.SEQUENCE_NAME);
+//		}
+		catch (Exception e) {
 			statusNode.put("status", false);
 			statusNode.put("errors", e.getMessage());
-			sequenceGeneratorService.decrement(UserDetails.SEQUENCE_NAME);
+//			sequenceGeneratorService.decrement(UserDetails.SEQUENCE_NAME);
 		}
 		return statusNode;
 	}
@@ -45,6 +52,9 @@ public class UserService {
 		ObjectNode userDetails = mapper.createObjectNode();
 		try {
 			UserDetails user = userDetailsRepository.getUserDetails(loginUser.getLoginid(), loginUser.getPassword());
+			if(user == null) {
+				throw new Exception("User not found");
+			}
 			statusNode.put("status", true);
 			userDetails.put("id", user.getId());
 			userDetails.put("firstName", user.getFirstname());
@@ -88,14 +98,26 @@ public class UserService {
 		String newPassword = user.getPassword();
 		try {
 			UserDetails userDetails = userDetailsRepository.getUserId(user.getLoginid());
+			if(userDetails != null) {
 			userDetails.setPassword(newPassword);
-			userDetailsRepository.save(userDetails);
+			userDetailsRepository.updatePassword(userDetails);
 			statusNode.put("status", true);
+			} else {
+				throw new Exception("Couldn't find user.");
+			}
 		} catch (Exception e) {
 			statusNode.put("status", false);
 			statusNode.put("errors", e.toString());
 		}
 		return statusNode;
+	}
+	
+	private long generateId(long randomId) {
+		long ts = new Date().getTime();
+		long randid = (long) Math.floor(Math.random() * 2);
+		ts = ts + randomId;
+		long uuid = ts + randid;
+		return uuid;
 	}
 	
 }

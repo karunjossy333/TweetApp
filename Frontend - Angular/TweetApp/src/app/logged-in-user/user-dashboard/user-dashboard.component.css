@@ -1,6 +1,6 @@
 .parent {
     height: auto;
-    width: 100vw;
+    width: auto;
     background-image: linear-gradient(to bottom right, rgb(33, 176, 233), rgb(247, 124, 9));
     display: flex;
     min-height: 100vh;

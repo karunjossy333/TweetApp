@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { FacadeLoggedInService } from '../service/facade-logged-in.service';
 import { LoggedInSharedService } from '../service/logged-in-shared.service';
@@ -22,6 +22,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   newTweet: string;
   hashTag: string;
   tweetData: any = [];
+
+  postTweetSub: Subscription | undefined;
 
   constructor(
     private router: Router,
@@ -68,20 +70,25 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       userid: this.userId,
       tweet: this.newTweet,
       hashtag: this.hashTag,
-      postdate: new Date().toDateString()
+      postdate: new Date()
     };
     this.facadeLoggedInService.postTweet(requestObject);
-    this.facadeLoggedInService.postTweetObservable.pipe(takeUntil(this.ngUnsubscribe)).subscribe((serviceData) => {
-      if (Object.keys(serviceData).length > 0) {
-        this.newTweet = '';
-        this.hashTag = '';
-        this.facadeLoggedInService.getUserTweet(this.userLoginId);
-      }
-    });
+    if (this.postTweetSub === undefined) {
+      this.postTweetSub = this.facadeLoggedInService.postTweetObservable.pipe(takeUntil(this.ngUnsubscribe)).subscribe((serviceData) => {
+        if (Object.keys(serviceData).length > 0) {
+          this.newTweet = '';
+          this.hashTag = '';
+          this.facadeLoggedInService.getUserTweet(this.userLoginId);
+        }
+      });
+    }
   }
 
   ngOnDestroy(): void {
     this.facadeLoggedInService.removeBehaviorSubject();
+    if(this.postTweetSub) {
+      this.postTweetSub.unsubscribe();
+    }
   }
 
 }

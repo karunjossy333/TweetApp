@@ -20,7 +20,8 @@ import io.swagger.annotations.ApiOperation;
 
 @ApiOperation(tags="TweetApp Controller", value = "/api/v1.0/tweets/")
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
+//@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://tweetapp-frontend-application.s3-website.ap-south-1.amazonaws.com/")
 @RequestMapping(value="/api/v1.0/tweets/")
 public class ApplicationController {
 
@@ -76,7 +77,7 @@ public class ApplicationController {
 	@ApiOperation(value="Like Tweet API", response=ObjectNode.class)
 	@RequestMapping(method= RequestMethod.GET, value="{userid}/like/{tweetid}")
 	public ObjectNode likeTweet(@PathVariable("userid") long userid, @PathVariable("tweetid") long tweetid) {
-		ObjectNode status = tweetService.likeTweet(userid, (int) tweetid);
+		ObjectNode status = tweetService.likeTweet(userid, (long) tweetid);
 	    return getResponse(status);
 	}
 	

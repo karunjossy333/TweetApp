@@ -3,33 +3,41 @@ package com.tweetapp.project.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.mapping.Document;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+//@Getter
+//@Setter
+//@ToString
+//@Document(collection = "UserTweets")
 
-@Getter
-@Setter
-@ToString
-@Document(collection = "UserTweets")
+@DynamoDBTable(tableName="user_tweets")
 public class UserTweets {
 
-	@Transient
-    public static final String SEQUENCE_NAME = "user_tweets";
+//	@Transient
+//    public static final String SEQUENCE_NAME = "user_tweets";
 	
-	@Id
+//	@Id
+	@DynamoDBHashKey
 	private long id;
+	@DynamoDBAttribute
 	private String tweet;
+	@DynamoDBAttribute
 	private String hashtag;
+	@DynamoDBAttribute
 	private long userid;
+	@DynamoDBAttribute
 	private String postdate;
+	@DynamoDBAttribute
 	private int likes;
+	@DynamoDBAttribute
 	private List<Long> likedusers=new ArrayList<Long>();
+	@DynamoDBAttribute
 	private Boolean isreply = false;
+	@DynamoDBAttribute
 	private long replytweetid = 0;
+	@DynamoDBAttribute
 	private String replyto = "";
 		
 	public UserTweets() {

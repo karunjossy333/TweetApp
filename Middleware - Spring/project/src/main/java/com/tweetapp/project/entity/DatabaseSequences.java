@@ -1,9 +1,9 @@
 package com.tweetapp.project.entity;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+//import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "DatabaseSequences")
+//@Document(collection = "DatabaseSequences")
 public class DatabaseSequences {
 
 	@Id

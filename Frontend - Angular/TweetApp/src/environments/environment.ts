@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  servername: 'http://localhost:4100'
+  servername: 'http://ec2-52-66-238-7.ap-south-1.compute.amazonaws.com:8080'
 };
 
 /*
