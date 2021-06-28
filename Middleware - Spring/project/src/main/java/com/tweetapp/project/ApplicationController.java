@@ -21,7 +21,7 @@ import io.swagger.annotations.ApiOperation;
 @ApiOperation(tags="TweetApp Controller", value = "/api/v1.0/tweets/")
 @RestController
 //@CrossOrigin(origins = "http://localhost:4200")
-@CrossOrigin(origins = "http://tweetapp-frontend-application.s3-website.ap-south-1.amazonaws.com/")
+@CrossOrigin
 @RequestMapping(value="/api/v1.0/tweets/")
 public class ApplicationController {
 
